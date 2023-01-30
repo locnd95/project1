@@ -1,0 +1,50 @@
+import 'package:dio/dio.dart';
+import 'package:movie_app/commond/commond_local_store.dart';
+
+class CommondApi {
+  static const url = "http://66.42.54.109:8010";
+  Dio dio = Dio();
+  // String token = await LocalUserCommond.getToken();
+  getData(
+      {required String endPoint,
+      String? tokenInput,
+      required Function functioneError}) async {
+    String token = await LocalUserCommond.getToken();
+    print("$url$endPoint");
+    dio.interceptors.add(InterceptorsWrapper(onError: (e, handler) {
+      print("Lỗi call $e");
+      functioneError();
+    }));
+    var response = await dio.get("$url$endPoint",
+        options: Options(headers: {
+          if (tokenInput == null)
+            "Authorization": "Bearer $token"
+          else
+            "Authorization": "Bearer $tokenInput",
+          "accept": "application/json",
+        }));
+    return response;
+  }
+
+  postData(
+      {required dynamic dataInput,
+      required String endPoint,
+      required Function function}) async {
+    String token = await LocalUserCommond.getToken();
+    print("URL Bookingseat $url$endPoint");
+    dio.interceptors.add(InterceptorsWrapper(
+      onError: (e, handler) {
+        function();
+      },
+    ));
+
+    var response = await dio.post("$url$endPoint",
+        data: dataInput,
+        options: Options(headers: {
+          "Authorization": "Bearer $token",
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }));
+    return response;
+  }
+}
